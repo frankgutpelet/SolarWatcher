@@ -7,7 +7,7 @@ class Victron(object):
 
 	def __init__(self, solarSupply, logger, comport):
 		self.Connect(comport)
-		self.logger = loggerange
+		self.logger = logger
 		self.solarSupply = solarSupply
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
 		return 
