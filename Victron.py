@@ -1,6 +1,7 @@
 import serial
 import mylogging
 import datetime
+import threading
 
 class Victron(object):
 	"""this class reads state of the victron energy charger and controls it"""
