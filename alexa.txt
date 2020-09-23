@@ -1,0 +1,1 @@
+https://tutorials-raspberrypi.de/eigenen-raspberry-pi-alexa-skill-entwickeln-und-pi-fernsteuern/

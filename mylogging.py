@@ -1,3 +1,5 @@
+import datetime
+
 class Logging:
 	LOGGLEVEL_NONE=0
 	LOGGLEVEL_ERROR=1

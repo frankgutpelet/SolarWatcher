@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Releases>
+	<Release number="1" name="Poolfilter" prio="5" maxpower="550">
+		<Switch enable="True" supply="solar" voltage="29" on="11:00" off="18:00"/>
+	</Release>
+	<Release number="2" name="Fussbodenheizung Bad" prio="6" maxpower="700">
+		<Switch enable="False" supply="solar" voltage="29" on="0:00" off="0:00"/>
+		<Switch enable="False" supply="all" voltage="0" on="5:00" off="6:00"/> <!-- supply: all/solar/mains-->
+	</Release>
+</Releases>

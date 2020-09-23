@@ -10,7 +10,9 @@ class Victron(object):
 		self.Connect(comport)
 		self.logger = logger
 		self.solarSupply = solarSupply
+		self.batVoltage = 0
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
+		self.ReadThread.start()
 		return 
 
 	def Connect(self, comport):
@@ -21,29 +23,42 @@ class Victron(object):
 			self.com.close()
 
 	def __ReadThread(self):
-
+		self.logger.Debug("start Victron Thread")
+		batV=0
+		solV=0
+		cur=0
+		mod=0
 		while True:
-			ser.flush()
-			batV=0
-			solV=0
-			cur=0
-			mod=0
+			self.com.flush()
+			update = False
 			for i in range(1, 20):
-				line = str(ser.readline())
+
+				line = str(self.com.readline())
 				try:
 					pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
 				except IndexError:
-					self.logger.Error("Error cannot parse text: " + line)
-					return
+					continue
 		
 				if ('V' == pair[0]):
-					batV = self.batVoltage = int(pair[1])/1000
+					self.batVoltage = int(pair[1])/1000
+					if (int(batV*10) != int(self.batVoltage*10)):
+						batV = self.batVoltage
+						update = True
 				elif ('VPV' == pair[0]):
-					solV = self.solVoltage = int(pair[1])/1000
+					self.solVoltage = int(pair[1])/1000
+					if (int(solV/5) != int(self.solVoltage/5)):
+						solV = self.solVoltage
+						update = True
 				elif ('I' == pair[0]):
-					cur = self.chargeCur = int(pair[1])/1000
+					self.chargeCur = int(pair[1])/1000
+					if (int(cur) != int(self.chargeCur)):
+						cur = self.chargeCur
+						update = True
 				elif ('MPPT' == pair[0]):
-					mod = self.mode = int(pair[1])/1000
-
+					self.mode = int(pair[1])
+					if (mod != self.mode):
+						mod = self.mode
+					update = True
+			if update:
 				self.logger.ToCVS(batV, solV, mod, cur, self.solarSupply.SolarSupply())
 

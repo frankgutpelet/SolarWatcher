@@ -4,20 +4,22 @@ import RPi.GPIO as GPIO
 
 
 class SupplyStatus:
-	def __init__(self):
+	def __init__(self, logger):
 		self.__solarSupply = False
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
+		self.logger = logger
+		self.ReadThread.start()
 
 	def SolarSupply(self):
-		ret = self.__solarSupply
+		return self.__solarSupply
 
 	def setSolarSupply(solarSupply):
 		self.__solarSupply = solarSupply
 
 	def __ReadThread(self):
-
+		self.logger.Debug("start SupplyStatus Thread")
 		while True:
 			#pegel is low - LED is blinking 
 			if (0 == GPIO.input(17)):

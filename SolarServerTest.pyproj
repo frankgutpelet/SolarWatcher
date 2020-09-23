@@ -4,13 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>96273260-95b5-41ef-a2e7-2e44836b1097</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>SolarServer.py</StartupFile>
+    <StartupFile>SolarServerTest.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>SolarServerTest</Name>
     <RootNamespace>SolarServerTest</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="SolarServer.py" />
+    <Compile Include="SolarServerTest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Victron.py">
       <SubType>Code</SubType>
     </Compile>

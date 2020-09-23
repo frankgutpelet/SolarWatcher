@@ -1,1 +1,1 @@
-python3.8 GPIO.py > error.log 2>&1&
+python3.8 SolarServer.py > error`date +"%Y-%m-%d_%H-%M"`.log 2>&1&
