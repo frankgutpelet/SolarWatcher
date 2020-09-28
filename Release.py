@@ -5,7 +5,7 @@ import os.path
 from datetime import datetime
 import requests
 
-maxPowerConsumptionWatt = 1100
+maxPowerConsumptionWatt = 3000
 voltageThreshold = 0.5
 
 class switch:
@@ -20,7 +20,7 @@ class switch:
 		self.hourOff = int(offtime.split(":")[0])
 		self.minuteOff = int(offtime.split(":")[1])
 		self.name = name
-		self.voltage = int(voltage)
+		self.voltage = float(voltage)
 		self.prio = int(prio)
 		self.maxpower = int(maxpower)
 		self.isOn = False
@@ -41,6 +41,13 @@ class Release:
 		self.configTimestamp = os.path.getmtime(configfile)
 		self.ReleaseThread = threading.Thread(target=self.__ReleaseThread, args = ())
 		self.ReleaseThread.start()
+
+	def IsRunning (self):
+		if self.ReleaseThread.isAlive():
+			return True
+		else:
+			#self.ReleaseThread.start()
+			return False
 
 	def __ReleaseThread (self):
 		global voltageThreshold
@@ -136,9 +143,12 @@ class Release:
 			self.logger.Error("configfile not valid xml")
 			return
 		root = config.getroot()
-
-		self.devicesOn.clear()
-		self.switches.clear()
+		try:
+			self.devicesOn.clear()
+			self.switches.clear()
+			self.logger.setLogLevel(root.find('Logging').attrib['loglevel'], root.find('Logging').attrib['cvs'])
+		except Exception:
+			self.logger.Error("configfile not well formed - cannot change loglevel")
 
 		for release in root.findall('Release'):
 			try:

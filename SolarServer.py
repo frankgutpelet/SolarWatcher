@@ -17,7 +17,7 @@ import mylogging
 import Release
 
 logger = mylogging.Logging()
-logger.setLogLevel(mylogging.Logging.LOGGLEVEL_DEBUG, True)
+logger.setLogLevel("DEBUG", "False")
 
 logger.Info("Starting SolarServer")
 BatVoltage = float()
@@ -33,8 +33,14 @@ lastStateSolarSupply = not supply.SolarSupply()
 
 while True:
 	
+	if not supply.IsRunning():
+		logger.Error("SupplyStatus Thread was terminated")
+	if not charger.IsRunning():
+		logger.Error("Victron Thread was terminated")
+	if not Freigabe.IsRunning():
+		logger.Error("Release Thread was terminated")
 		
-	time.sleep(5)
+	time.sleep(60)
 
 	
 	
