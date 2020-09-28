@@ -1,0 +1,13 @@
+{% extends 'Settings/base.html' %}
+
+{% block title %} Settings - Account erstellen {% endblock %}
+
+{% block authform %}
+
+<form method="post" action="">
+    {% csrf_token %}
+    {{ register_form.as_p}}
+    <button type="submit">Registrieren</button>
+</form>
+
+{% endblock %}
