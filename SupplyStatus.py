@@ -33,7 +33,8 @@ class SupplyStatus:
 			else:
 				#wait for 2 seconds for falling edge (sample 100ms)
 				while  None != GPIO.wait_for_edge(27, GPIO.FALLING, timeout=2000):
-					self.logger.Debug("Wait for falling edge")
+					#self.logger.Debug("Wait for falling edge")
+					time.sleep(0.1)
 					pass
 
 				#no falling edge - indicator does not blink anymore

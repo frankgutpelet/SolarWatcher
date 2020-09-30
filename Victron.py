@@ -132,17 +132,19 @@ class Victron(object):
 		cur=0
 		mod=0
 		while True:
-			self.com.flush()
-			update = False
-			for i in range(1, 20):
+			try:
+				line = ""
+				self.com.flush()
+				update = False
+				for i in range(1, 20):
 
-				line = str(self.com.readline())
-				try:
+					line = str(self.com.readline())
+					
 					pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
-				except IndexError:
-					continue
 		
-				try:
+					if 2 > len(pair):
+						continue
+
 					if ('V' == pair[0]):
 						self.batVoltage = int(pair[1])/1000
 						if (int(batV*10) != int(self.batVoltage*10)):
@@ -166,11 +168,11 @@ class Victron(object):
 						self.errorcode = int(pair[1])
 						if(Victron.Error.No_error != self.errorcode):
 							self.logger.Error(Victron.Error.getError(self.errorcode))
-				except Exception:
-					continue
 
-			self.WriteToFiFo(batV, cur, solV, self.solarSupply.SolarSupply(), mod)
-			if update:
-				self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
-			time.sleep(1)
+				self.WriteToFiFo(batV, cur, solV, self.solarSupply.SolarSupply(), mod)
+				if update:
+					self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
+				time.sleep(1)
+			except Exception  as e:
+				self.logger.Error("Error in Victron Thread" + str(e) + " in line: " + line)
 
