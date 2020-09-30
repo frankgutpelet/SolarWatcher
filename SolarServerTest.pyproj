@@ -26,6 +26,9 @@
     <Compile Include="SolarServerTest.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ThreadWatchdog.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Victron.py">
       <SubType>Code</SubType>
     </Compile>

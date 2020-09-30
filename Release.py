@@ -30,7 +30,7 @@ class switch:
 
 
 class Release:
-	def __init__(self, charger, logger, configfile):
+	def __init__(self, charger, logger, configfile, watchdog):
 		self.configfile = configfile
 		self.logger = logger
 		self.switches = list()
@@ -39,6 +39,8 @@ class Release:
 		self.devicesOn = {}
 		self.parseConfig()
 		self.configTimestamp = os.path.getmtime(configfile)
+		self.wdIndex = watchdog.subscribe("Release", 10)
+		self.watchdog = watchdog
 		self.ReleaseThread = threading.Thread(target=self.__ReleaseThread, args = ())
 		self.ReleaseThread.start()
 
@@ -74,6 +76,7 @@ class Release:
 				self.configTimestamp = os.path.getmtime(self.configfile)
 				self.parseConfig()
 			time.sleep(5)
+			self.watchdog.trigger(self.wdIndex)
 
 
 	def Ontime(self, sw):

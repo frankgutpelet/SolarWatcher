@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Releases>
-	<Logging loglevel="ERROR" cvs="False"/>
+	<Logging loglevel="DEBUG" cvs="True"/>
 	<Release number="1" name="Poolfilter" prio="5" maxpower="550">
 		<Switch enable="False" supply="solar" voltage="28.5" on="11:00" off="18:00"/>
 	</Release>
