@@ -82,22 +82,17 @@ class Victron(object):
 				return "Unknown state " + str(state)
 
 
-	def __init__(self, solarSupply, logger, comport):
+	def __init__(self, solarSupply, logger, comport, watchdog):
 		self.logger = logger
 		self.Connect(comport)
 		self.solarSupply = solarSupply
 		self.batVoltage = 0
 		self.pipeLength = 0
+		self.wdIndex = watchdog.subscribe("Victron", 2)
+		self.watchdog = watchdog
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
 		self.ReadThread.start()
 		return 
-
-	def IsRunning (self):
-		if self.ReadThread.isAlive():
-			return True
-		else:
-			#self.ReadThread.start()
-			return False
 
 	def Connect(self, comport):
 		self.com = serial.Serial(comport, 19200)
@@ -173,4 +168,5 @@ class Victron(object):
 			if update:
 				self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
 			time.sleep(1)
+			self.watchdog.trigger(self.wdIndex)
 

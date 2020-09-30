@@ -1,5 +1,6 @@
 import Release
 import time
+import ThreadWatchdog
 
 class log:
 	def __init__(self):
@@ -25,7 +26,8 @@ class charge:
 
 logger = log()
 charger = charge()
-Release.Release(charger, logger, "Releases.xml")
+wd = ThreadWatchdog.ThreadWatchdog(logger)
 
-while True:
-	time.sleep(10)
+Release.Release(charger, logger, "Releases.xml", wd)
+
+wd.watchThreads()

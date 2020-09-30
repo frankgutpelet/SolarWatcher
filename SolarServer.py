@@ -15,6 +15,7 @@ import SupplyStatus
 import Victron
 import mylogging
 import Release
+import ThreadWatchdog
 
 logger = mylogging.Logging()
 logger.setLogLevel("DEBUG", "False")
@@ -24,23 +25,18 @@ BatVoltage = float()
 SolVoltage = float()
 chargeCur = float()
 mode = int()
-supply = SupplyStatus.SupplyStatus(logger)
-charger = Victron.Victron(supply, logger, "/dev/ttyUSB0")
-Freigabe = Release.Release(charger, logger, "Releases.xml")
+wd = ThreadWatchdog.ThreadWatchdog(logger)
+
+supply = SupplyStatus.SupplyStatus(logger, wd)
+charger = Victron.Victron(supply, logger, "/dev/ttyUSB0", wd)
+Freigabe = Release.Release(charger, logger, "Releases.xml", wd)
 
 #chnge state for the first action
 lastStateSolarSupply = not supply.SolarSupply()
 
-while True:
-	
-	if not supply.IsRunning():
-		logger.Error("SupplyStatus Thread was terminated")
-	if not charger.IsRunning():
-		logger.Error("Victron Thread was terminated")
-	if not Freigabe.IsRunning():
-		logger.Error("Release Thread was terminated")
-		
-	time.sleep(60)
+#endless loop - does not return
+wd.watchThreads()
+
 
 	
 	
