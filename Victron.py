@@ -169,7 +169,7 @@ class Victron(object):
 					self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
 				time.sleep(1)
 			except Exception  as e:
-				self.logger.Error("Error in Victron Thread" + str(e) + " in line: " + line)
+				self.logger.Error("Error in Victron Thread " + str(e) + " in line: " + line)
 
 			self.watchdog.trigger(self.wdIndex)
 

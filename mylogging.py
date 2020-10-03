@@ -19,10 +19,8 @@ class Logging:
 		self.loggingThread.start()
 
 	def __ThreadFunc(self):
-		logging = False
 		while True:
-			if (len(self.logBuffer) > 5) or logging:
-				logging = False
+			if (len(self.logBuffer) >= 1):
 				try:
 					logfile = open("log/solarstatus_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".log", "a")
 					self.__lock_logBuffer.acquire()
@@ -33,10 +31,8 @@ class Logging:
 					logfile.close
 				except Exception as e: # logging should not lead to an exception
 					print(e)
-			else:
-				logging = True
 			
-			if  len(self.cvsBuffer) < 5:
+			if  len(self.cvsBuffer) >= 1:
 				try:
 					logfile = open("log/valuess_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".cvs", "a")
 					self.__lock_cvsBuffer.acquire()

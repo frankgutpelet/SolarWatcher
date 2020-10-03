@@ -31,19 +31,19 @@ class SupplyStatus:
 		self.logger.Debug("start SupplyStatus Thread")
 		while True:
 			self.watchdog.trigger(self.wdIndex)
+			try:
 
-			#pegel is low - LED is blinking 
-			if (0 == GPIO.input(27)):
-				if not self.__solarSupply:	#only set if it is not set
-					self.__solarSupply = True
-				time.sleep(5)
-			else:
 				#wait for 2 seconds for falling edge (sample 100ms)
-				while  None != GPIO.wait_for_edge(27, GPIO.FALLING, timeout=2000):
-					#self.logger.Debug("Wait for falling edge")
+				if  None != GPIO.wait_for_edge(27, GPIO.FALLING, timeout=2000):
 					time.sleep(0.1)
-					pass
-
-				#no falling edge - indicator does not blink anymore
-				if self.__solarSupply:	#only reset if it is set
+					if 1 == GPIO.input(27):	#debounce
+						self.__solarSupply = False
+					#self.logger.Debug("Wait for falling edge")
+					self.__solarSupply = True
+				else:
+					#no falling edge - indicator does not blink anymore
 					self.__solarSupply = False
+			except Exception as e:
+				self.logger.Error("SolarSupply: " + str(e))
+				GPIO.setmode(GPIO.BCM)
+				GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
