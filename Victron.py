@@ -4,6 +4,8 @@ import datetime
 import threading
 import os
 import time 
+import FrontendInterface
+import traceback
 
 class Victron(object):
 	"""this class reads state of the victron energy charger and controls it"""
@@ -90,35 +92,17 @@ class Victron(object):
 		self.pipeLength = 0
 		self.wdIndex = watchdog.subscribe("Victron", 2)
 		self.watchdog = watchdog
+		self.FrontendIf = FrontendInterface.FrontEnd.GetInstance(logger)
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
 		self.ReadThread.start()
 		return 
 
 	def Connect(self, comport):
 		self.com = serial.Serial(comport, 19200)
-		self.path = "/tmp/solarWatcher.fifo"
-		try:
-			os.mkfifo(self.path)
-		except FileExistsError:
-			self.logger.Debug("/tmp/solarWatcher.fifo still exists")
-
 
 	def Disconnect(self):
 		if self.com.isOpen():
 			self.com.close()
-
-	def WriteToFiFo (self, batV, batI, solV, solarsupply, mode):
-		self.pipeLength += 1
-		supply = "Netz"
-		if solarsupply:
-			supply = "Solar"
-
-		try:
-			self.fifo = open(self.path, "w")
-			self.fifo.write(str(batV) + ";" + str(batI) + ";" + str(solV) + ";" + str(supply) + ";" + Victron.ChargingState.GetState(mode) + "\n")
-			self.fifo.close()
-		except Exception as e:
-			self.logger.Error(str(e.with_traceback))
 
 	def __ReadThread(self):
 		self.logger.Debug("start Victron Thread")
@@ -134,9 +118,12 @@ class Victron(object):
 				for i in range(1, 20):
 
 					line = str(self.com.readline())
-					
-					pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
-		
+					try:
+						pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
+					except:
+						self.logger.Debug("could not parse: " + line)
+						continue
+
 					if 2 > len(pair):
 						continue
 
@@ -164,12 +151,17 @@ class Victron(object):
 						if(Victron.Error.No_error != self.errorcode):
 							self.logger.Error(Victron.Error.getError(self.errorcode))
 
-				self.WriteToFiFo(batV, cur, solV, self.solarSupply.SolarSupply(), mod)
+				if(self.solarSupply.SolarSupply()):
+					self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Solar")
+				else:
+					self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Netz")
+				self.FrontendIf.sendData()
+
 				if update:
 					self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
 				time.sleep(1)
 			except Exception  as e:
-				self.logger.Error("Error in Victron Thread " + str(e) + " in line: " + line)
+				self.logger.Error("Error in Victron Thread " + str(e) + " in line: " + line + traceback.format_exc())
 
 			self.watchdog.trigger(self.wdIndex)
 

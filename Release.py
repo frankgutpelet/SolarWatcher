@@ -4,9 +4,10 @@ import time
 import os.path
 from datetime import datetime
 import requests
+import FrontendInterface
 
 maxPowerConsumptionWatt = 3000
-voltageThreshold = 0.5
+voltageThresholdP100W = 0.4
 
 class switch:
 	SUPPLY_MAINS = 0
@@ -41,6 +42,7 @@ class Release:
 		self.configTimestamp = os.path.getmtime(configfile)
 		self.wdIndex = watchdog.subscribe("Release", 10)
 		self.watchdog = watchdog
+		self.frontendif = FrontendInterface.FrontEnd.GetInstance(logger)
 		self.ReleaseThread = threading.Thread(target=self.__ReleaseThread, args = ())
 		self.ReleaseThread.start()
 
@@ -52,9 +54,12 @@ class Release:
 			return False
 
 	def __ReleaseThread (self):
-		global voltageThreshold
+		global voltageThresholdP100W
 
 		self.logger.Debug("Start Release Thread")
+
+		for sw in self.switches:
+			self.Switch(sw, False)
 
 		while True:
 			for sw in self.switches:
@@ -62,9 +67,11 @@ class Release:
 					if(		(switch.SUPPLY_ALL == sw.supply)																					#all supply
 						or	((switch.SUPPLY_MAINS == sw.supply) and (False == self.charger.solarSupply.SolarSupply()))										#mains supply
 						or	((switch.SUPPLY_SOLAR == sw.supply) and (self.charger.solarSupply.SolarSupply())and(sw.voltage <= self.charger.batVoltage))):		#solar supply
-						
-						if ((switch.SUPPLY_SOLAR == sw.supply) and (sw.voltage + voltageThreshold > self.charger.batVoltage)):		# do nothing when treshold not reached
+						tresholdVoltage = sw.voltage + (voltageThresholdP100W*sw.maxpower/100)
+						if ((switch.SUPPLY_SOLAR == sw.supply) and (tresholdVoltage > self.charger.batVoltage)):		# do nothing when treshold not reached
+							self.logger.Debug(sw.name + "will be switched at " + str(tresholdVoltage) )
 							continue
+						self.logger.Debug("Bat: " + str(self.charger.batVoltage) + "V")
 						self.Switch(sw, True)
 					else:
 						self.Switch(sw, False)
@@ -133,11 +140,13 @@ class Release:
 				self.logger.Debug("Switch " + sw.name + " on")
 				sw.isOn = True
 				self.devicesOn[sw.name][sw.switchNumber] = True
+				self.frontendif.updateDevice(sw.name, "on")
 		else:
 			if sw.isOn:
 				self.logger.Debug("Switch " + sw.name + " off")
 				sw.isOn = False
 				self.devicesOn[sw.name][sw.switchNumber] = False
+				self.frontendif.updateDevice(sw.name, "off")
 
 	def parseConfig(self):
 		try:

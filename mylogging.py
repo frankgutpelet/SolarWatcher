@@ -21,16 +21,16 @@ class Logging:
 	def __ThreadFunc(self):
 		while True:
 			if (len(self.logBuffer) >= 1):
+				self.__lock_logBuffer.acquire()
 				try:
 					logfile = open("log/solarstatus_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".log", "a")
-					self.__lock_logBuffer.acquire()
 					for entry in self.logBuffer:
 						logfile.write(entry)
+					logfile.close()
 					self.logBuffer.clear()
-					self.__lock_logBuffer.release()
-					logfile.close
 				except Exception as e: # logging should not lead to an exception
 					print(e)
+				self.__lock_logBuffer.release()
 			
 			if  len(self.cvsBuffer) >= 1:
 				try:
@@ -38,12 +38,12 @@ class Logging:
 					self.__lock_cvsBuffer.acquire()
 					for entry in self.cvsBuffer:
 						logfile.write(entry)
+					logfile.close()
 					self.cvsBuffer.clear()
 					self.__lock_cvsBuffer.release()
-					logfile.close
 				except Exception: # logging should not lead to an exception
 					self.Error("Cannot write to CVS")
-					return
+				
 			time.sleep(5)
 		
 	def Debug (self, string):
@@ -70,7 +70,7 @@ class Logging:
 
 	def __Log (self, string):
 		self.__lock_logBuffer.acquire()
-		self.logBuffer.append(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S") + ": " + string + "\n")
+		self.logBuffer.append(datetime.datetime.now().strftime("%H:%M:%S") + ": " + string + "\n")
 		self.__lock_logBuffer.release()
 
 	def setLogLevel (self, loglevel, cvs):

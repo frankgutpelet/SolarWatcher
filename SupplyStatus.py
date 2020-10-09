@@ -35,9 +35,8 @@ class SupplyStatus:
 
 				#wait for 2 seconds for falling edge (sample 100ms)
 				if  None != GPIO.wait_for_edge(27, GPIO.FALLING, timeout=2000):
-					time.sleep(0.1)
 					if 1 == GPIO.input(27):	#debounce
-						self.__solarSupply = False
+						continue
 					#self.logger.Debug("Wait for falling edge")
 					self.__solarSupply = True
 				else:

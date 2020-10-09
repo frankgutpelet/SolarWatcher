@@ -52,7 +52,13 @@
 </table>
 
 <label for="file">Solar Power:</label>
-<progress id="file" value="{{ solarPower }}" max="1200"> {{ solarPower }}W </progress>
+<progress id="file" value="{{ solarPower }}" max="1200"> {{ solarPower }}W </progress> <br>
+<table bgcolor="#0000FF" class="auto-style3" style="width: 100%">
+{% autoescape off %}
+	{{ deviceTable }}
+{% endautoescape %}
+</table>
+
 </body>
 
 </html>

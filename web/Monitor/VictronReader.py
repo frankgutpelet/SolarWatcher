@@ -20,6 +20,7 @@ class VictronReader:
         self.batI = 0
         self.supply = "unknown"
         self.chargemode = "unknown"
+        self.devices = list()
 
         self.VictronThread = threading.Thread(target=self.ReadVictronValues, args=())
         self.VictronThread.start()
@@ -38,5 +39,10 @@ class VictronReader:
                 self.solV = values[2]
                 self.supply = values[3]
                 self.chargemode = values[4]
+            self.devices.clear()
+            for index in range(5, len(values), 2):
+                if len(values) < (index + 2):
+                    break
+                self.devices.append({'name' : values[index], 'value' : values[index + 1]})
             fifo.close()
             time.sleep(1)
