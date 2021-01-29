@@ -34,7 +34,7 @@ class Logging:
 			
 			if  len(self.cvsBuffer) >= 1:
 				try:
-					logfile = open("log/valuess_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".cvs", "a")
+					logfile = open("log/valuess_" + datetime.datetime.today().strftime("%Y-%m-%d") + ".csv", "a")
 					self.__lock_cvsBuffer.acquire()
 					for entry in self.cvsBuffer:
 						logfile.write(entry)
@@ -65,7 +65,7 @@ class Logging:
 		if not self.__logToCVS:
 			return
 		self.__lock_cvsBuffer.acquire()
-		self.cvsBuffer.append(datetime.datetime.now().strftime("%d-%m-%Y,%H:%M:%S")+","+str(batVoltage)+","+str(SolarVoltage)+","+str(current)+","+str(solarsupply)+","+mode+"\n")
+		self.cvsBuffer.append(datetime.datetime.now().strftime("%d-%m-%Y;%H:%M:%S")+";"+str(batVoltage).replace('.',',')+";"+str(SolarVoltage).replace('.',',')+";"+str(current).replace('.',',')+";"+str(solarsupply)+";"+mode+"\n")
 		self.__lock_cvsBuffer.release()
 
 	def __Log (self, string):
