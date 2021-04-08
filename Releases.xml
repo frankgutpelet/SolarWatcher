@@ -1,14 +1,13 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <Releases>
-	<Logging loglevel="DEBUG" cvs="False"/>
+	<Logging loglevel="INFO" cvs="False" />
 	<Release number="1" name="Poolfilter" prio="5" maxpower="550">
-		<Switch enable="False" supply="solar" voltage="28.5" on="11:00" off="18:00"/>
+		<Switch id="0" enable="True" supply="solar" voltage="25" on="11:00" off="18:30" frostschutz="0" />
 	</Release>
 	<Release number="2" name="Fussbodenheizung Bad" prio="6" maxpower="500">
-		<Switch enable="True" supply="solar" voltage="26" on="0:00" off="0:00"/>
-		<Switch enable="False" supply="all" voltage="0" on="5:00" off="6:00"/> <!-- supply: all/solar/mains-->
+		<Switch id="0" enable="True" supply="solar" voltage="25.5" on="0:00" off="0:00" />
 	</Release>
 	<Release number="3" name="E-Bike Ladestation" prio="4" maxpower="300">
-		<Switch enable="True" supply="solar" voltage="0" on="0:00" off="0:00"/>
+		<Switch id="0" enable="True" supply="solar" voltage="0" on="0:00" off="0:00" />
 	</Release>
 </Releases>

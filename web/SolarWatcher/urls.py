@@ -19,5 +19,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Monitor/', include('Monitor.urls')),
-    path('Settings/', include('Settings.urls'))
+    path('Settings/', include('Settings.urls')),
+    path('Rikatronic/', include('Rikatronic.urls'))
 ]
