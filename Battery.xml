@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Batteries>
+	<ADC number="1" tty="/dev/ttyUSB1"/>
+	<String number="1" name="Säure1" ADC="1" channel="2">
+		<Battery1 channel="0" />
+		<Battery2 channel="1" />
+	</String>
+
+</Batteries>
