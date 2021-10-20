@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class RikatronicConfig(AppConfig):
-    name = 'Rikatronic'
+    name = 'Battery'

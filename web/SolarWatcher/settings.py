@@ -26,7 +26,9 @@ SECRET_KEY = '+txe-94uo@i&!#v4tg-f$u=adp04p&%269jb(j)aoo8@&w%mx%'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'moskitoii'
+    'moskitoii',
+    '217.240.128.220',
+    'gutpelet.home.kg'
 ]
 
 
@@ -41,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Monitor',
     'Settings',
-    'Rikatronic'
+    'Battery'
 ]
 
 MIDDLEWARE = [
