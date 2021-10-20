@@ -6,34 +6,14 @@ from datetime import datetime
 import requests
 import FrontendInterface
 import Temperature
+from ThreadWatchdog import ThreadWatchdog
+from Switch import switch
 
 maxPowerConsumptionWatt = 3000
-voltageThresholdP100W = 0.2
-
-class switch:
-	SUPPLY_MAINS = 0
-	SUPPLY_SOLAR = 1
-	SUPPLY_ALL = 2
-
-	def __init__(self, No, ontime, offtime, voltage, name, prio, maxpower, supply, tempMin):
-		self.no = No
-		self.hourOn = int(ontime.split(":")[0])
-		self.minuteOn = int(ontime.split(":")[1])
-		self.hourOff = int(offtime.split(":")[0])
-		self.minuteOff = int(offtime.split(":")[1])
-		self.name = name
-		self.voltage = float(voltage)
-		self.prio = int(prio)
-		self.maxpower = int(maxpower)
-		self.isOn = False
-		self.switchNumber = 0
-		self.supply = supply
-		self.tempMin = float(tempMin)
-		self.tempProtection = False
-
+voltageThresholdP100W = 0.4
 
 class Release:
-	def __init__(self, charger, logger, configfile, watchdog):
+	def __init__(self, charger, logger, configfile, watchdog : ThreadWatchdog):
 		self.configfile = configfile
 		self.logger = logger
 		self.switches = list()
@@ -66,7 +46,12 @@ class Release:
 		while True:
 			self.frontendif.updateTemp(Temperature.Temperature.getOutdoorTemp())
 			for sw in self.switches:
-				if self.Ontime(sw):	#Zeitschaltuhr
+				sw.CheckTime()
+				if "ON" == sw.mode:
+					self.Switch(sw, True)
+				elif "OFF" == sw.mode:
+					self.Switch(sw, False)
+				elif self.Ontime(sw):	#Zeitschaltuhr
 					if(		(switch.SUPPLY_ALL == sw.supply)																					#all supply
 						or	((switch.SUPPLY_MAINS == sw.supply) and (False == self.charger.solarSupply.SolarSupply()))										#mains supply
 						or	((switch.SUPPLY_SOLAR == sw.supply) and (self.charger.solarSupply.SolarSupply())and(sw.voltage <= self.charger.batVoltage))):		#solar supply
@@ -81,20 +66,19 @@ class Release:
 				else:
 					self.Switch(sw, False)
 
-				if sw.tempMin >= Temperature.Temperature.getOutdoorTemp():	#Frostschutz
-					self.Switch(sw, True)
-					sw.tempProtection = True
-					self.logger.Debug("protect " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
-				elif sw.tempProtection and (sw.tempMin < (Temperature.Temperature.getOutdoorTemp() + 0.2)):
-					self.Switch(sw, False)
-					sw.tempProtection = False
-					self.logger.Debug("switch off protection for  " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
+				#if sw.tempMin >= Temperature.Temperature.getOutdoorTemp():	#Frostschutz
+				#	self.Switch(sw, True)
+				#	sw.tempProtection = True
+				#	self.logger.Debug("protect " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
+				#elif sw.tempProtection and (sw.tempMin < (Temperature.Temperature.getOutdoorTemp() + 0.2)):
+				#	self.Switch(sw, False)
+				#	sw.tempProtection = False
+				#	self.logger.Debug("switch off protection for  " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
 
 			self.HandleRelease()
 			if self.configTimestamp != os.path.getmtime(self.configfile):
 				self.configTimestamp = os.path.getmtime(self.configfile)
 				self.parseConfig()
-			time.sleep(5)
 			self.watchdog.trigger(self.wdIndex)
 
 
@@ -146,19 +130,27 @@ class Release:
 		return False
 
 	def Switch (self, sw, on):
-		
+		time = datetime.now()
+		absMinute = time.hour*60 + time.minute
+
 		if on:
 			if not sw.isOn:
-				self.logger.Debug("Switch " + sw.name + " on")
+				self.logger.Info("Switch " + sw.name + " on")
 				sw.isOn = True
 				self.devicesOn[sw.name][sw.switchNumber] = True
-				self.frontendif.updateDevice(sw.name, "on", str(sw.tempProtection))
+				sw.lastSyncAbsMinute = absMinute
+			else:
+				sw.doneTimeAbsMinute += absMinute - sw.lastSyncAbsMinute
+				sw.lastSyncAbsMinute = absMinute
+			self.frontendif.updateDevice(sw.name, "on", str(sw.tempProtection), sw.mode, sw.doneTimeAbsMinute)
 		else:
 			if sw.isOn:
-				self.logger.Debug("Switch " + sw.name + " off")
+				self.logger.Info("Switch " + sw.name + " off")
 				sw.isOn = False
 				self.devicesOn[sw.name][sw.switchNumber] = False
-				self.frontendif.updateDevice(sw.name, "off", "False")
+				self.logger.Info("switched off " + sw.name + " (ontime today: " + str(sw.doneTimeAbsMinute) + "min)")
+			self.frontendif.updateDevice(sw.name, "off", "False", sw.mode, sw.doneTimeAbsMinute)
+
 
 	def parseConfig(self):
 		try:
@@ -168,8 +160,8 @@ class Release:
 			return
 		root = config.getroot()
 		try:
-			self.devicesOn.clear()
-			self.switches.clear()
+#			self.devicesOn.clear()
+#			self.switches.clear()
 			self.logger.setLogLevel(root.find('Logging').attrib['loglevel'], root.find('Logging').attrib['cvs'])
 		except Exception:
 			self.logger.Error("configfile not well formed - cannot change loglevel")
@@ -180,6 +172,7 @@ class Release:
 				name = release.attrib['name']
 				prio = release.attrib['prio']
 				maxpower = release.attrib['maxpower']
+				mode = release.attrib['mode']
 			except Exception:
 				self.logger.Error("Configfile is not well formed: Element " + release.tag)
 			for cur_switch in release.findall('Switch'):
@@ -200,16 +193,25 @@ class Release:
 					tempMin = cur_switch.attrib['frostschutz']
 				else:
 					tempMin = -50
-				try:
-					new_switch = switch(no, cur_switch.attrib['on'], cur_switch.attrib['off'], cur_switch.attrib['voltage'], name, prio, maxpower, supply, tempMin)
-				except Exception:
-					self.logger.Error("Configfile is not well formed: Element Release(" + name + ")/" + cur_switch.tag)
-					continue
+
+				found = False
+
+				for sw in self.switches:
+					if sw.no == no:
+						found = True
+						sw.Update(cur_switch.attrib['on'], cur_switch.attrib['off'], cur_switch.attrib['voltage'], name, prio, maxpower, supply, tempMin, mode)
+
+				if not found:
+					try:
+						new_switch = switch(no, cur_switch.attrib['on'], cur_switch.attrib['off'], cur_switch.attrib['voltage'], name, prio, maxpower, supply, tempMin, mode, self.logger)
+					except Exception:
+						self.logger.Error("Configfile is not well formed: Element Release(" + name + ")/" + cur_switch.tag)
+						continue
 				
-				if None == self.devicesOn.get(name):
-					self.devicesOn[name] = list()
-				self.devicesOn[name].append(False)
-				new_switch.switchNumber = (len(self.devicesOn[name]) - 1)
-				self.switches.append(new_switch)
+					if None == self.devicesOn.get(name):
+						self.devicesOn[name] = list()
+					self.devicesOn[name].append(False)
+					new_switch.switchNumber = (len(self.devicesOn[name]) - 1)
+					self.switches.append(new_switch)
 
 		self.logger.Debug("Release Configuration updated successful")

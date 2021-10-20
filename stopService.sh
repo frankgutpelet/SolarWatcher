@@ -1,2 +1,2 @@
-pid=`ps -Af |grep SolarServer |grep -v grep |cut -d ' ' -f 7`
+pid=`ps -Af |grep SolarServer |grep -v grep |sed 's/\s\s*/ /g' |cut -d ' ' -f2`
 kill $pid

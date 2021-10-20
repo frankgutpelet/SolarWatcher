@@ -4,10 +4,13 @@ import RPi.GPIO as GPIO
 
 
 class SupplyStatus:
+
+	gpioPin = 4
+
 	def __init__(self, logger, watchdog):
 		self.__solarSupply = False
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+		GPIO.setup(self.gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 		self.ReadThread = threading.Thread(target=self.__ReadThread, args = ())
 		self.logger = logger
 		self.watchdog = watchdog
@@ -34,8 +37,8 @@ class SupplyStatus:
 			try:
 
 				#wait for 2 seconds for falling edge (sample 100ms)
-				if  None != GPIO.wait_for_edge(27, GPIO.FALLING, timeout=2000):
-					if 1 == GPIO.input(27):	#debounce
+				if  None != GPIO.wait_for_edge(self.gpioPin, GPIO.FALLING, timeout=2000):
+					if 1 == GPIO.input(self.gpioPin):	#debounce
 						continue
 					#self.logger.Debug("Wait for falling edge")
 					self.__solarSupply = True
@@ -45,4 +48,4 @@ class SupplyStatus:
 			except Exception as e:
 				self.logger.Error("SolarSupply: " + str(e))
 				GPIO.setmode(GPIO.BCM)
-				GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+				GPIO.setup(self.gpioPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)

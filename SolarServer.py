@@ -16,6 +16,7 @@ import Victron
 import mylogging
 import Release
 import ThreadWatchdog
+import FuelGauge
 
 logger = mylogging.Logging()
 logger.setLogLevel("DEBUG", "False")
@@ -27,6 +28,7 @@ chargeCur = float()
 mode = int()
 wd = ThreadWatchdog.ThreadWatchdog(logger)
 
+#fuelGauge = FuelGauge.FuelGauge("Battery.xml", logger)
 supply = SupplyStatus.SupplyStatus(logger, wd)
 charger = Victron.Victron(supply, logger, "/dev/ttyUSB0", wd)
 Freigabe = Release.Release(charger, logger, "Releases.xml", wd)
