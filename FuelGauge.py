@@ -20,7 +20,7 @@ class FuelGauge(object):
         self.__parseConfig()
         self.configTimestamp = os.path.getmtime(self.configfile)
         self.FuelGaugeThread = threading.Thread(target=self.__FuelGaugeThread, args=())
-        self.FuelGaugeThread.start()
+        #self.FuelGaugeThread.start()
 
 
     def __FuelGaugeThread(self):
@@ -34,7 +34,6 @@ class FuelGauge(object):
             for string in self.strings:
                 string.getValues()
                 self.FrontEndInterface.updateBattery(string.name, string.number, round(string.voltage1, 2), round(string.voltage2, 2), round(string.current, 2), "")
-                self.logger.Error("Battery")
 
             time.sleep(5)
 
