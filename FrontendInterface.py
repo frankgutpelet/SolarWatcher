@@ -39,7 +39,6 @@ class FrontEnd(object):
 		self.devicelist[name] = value
 		self.frostschutz[name] = frostschutz
 		self.ontime[name] = str(ontime)
-		self.logger.Error(name + ": " + self.ontime[name])
 
 	def updateBattery(self, name, number, bat1v, bat2v, current, warning):
 		batteryData =  "Battery; " + str(number) + ";" + name + ";" + str(bat1v) + ";" + str(bat2v) +";" + str(current) + ";" + warning

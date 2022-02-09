@@ -176,6 +176,8 @@ class Release:
 			except Exception:
 				self.logger.Error("Configfile is not well formed: Element " + release.tag)
 			for cur_switch in release.findall('Switch'):
+				if "False" == cur_switch.attrib['enable']:
+					continue
 				if "solar" == cur_switch.attrib['supply']:
 					supply = switch.SUPPLY_SOLAR
 				elif "all" == cur_switch.attrib['supply']:
@@ -205,7 +207,7 @@ class Release:
 					try:
 						new_switch = switch(no, cur_switch.attrib['on'], cur_switch.attrib['off'], cur_switch.attrib['voltage'], name, prio, maxpower, supply, tempMin, mode, self.logger)
 					except Exception:
-						self.logger.Error("Configfile is not well formed: Element Release(" + name + ")/" + cur_switch.tag)
+						self.logger.Debug("Configfile is not well formed: Element Release(" + name + ")/" + cur_switch.tag)
 						continue
 				
 					if None == self.devicesOn.get(name):

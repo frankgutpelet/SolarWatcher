@@ -37,7 +37,7 @@ class SupplyStatus:
 			try:
 
 				#wait for 2 seconds for falling edge (sample 100ms)
-				if  None != GPIO.wait_for_edge(self.gpioPin, GPIO.FALLING, timeout=2000):
+				if  None != GPIO.wait_for_edge(self.gpioPin, GPIO.FALLING, timeout=4000):
 					if 1 == GPIO.input(self.gpioPin):	#debounce
 						continue
 					#self.logger.Debug("Wait for falling edge")
