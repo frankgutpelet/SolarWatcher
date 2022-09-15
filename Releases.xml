@@ -1,19 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Releases>
 	<Logging cvs="True" loglevel="DEBUG" />
-	<Release maxpower="550" mode="ON" name="Poolfilter" number="1" prio="5">
-		<Switch enable="False" frostschutz="-100" id="0" off="19:30" on="09:30" supply="solar" voltage="24.0" />
+	<Release maxpower="500" mode="AUTO" name="Kuehlschrank" number="1" prio="5">
+		<Switch enable="True" frostschutz="-100" id="0" off="19:30" on="09:30" supply="solar" voltage="25.5" />
 	</Release>
-	<Release maxpower="500" mode="AUTO" name="Fussbodenheizung Bad" number="2" prio="6">
+	<Release maxpower="500" mode="OFF" name="Fussbodenheizung Bad" number="2" prio="6">
 		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="25.7" />
 	</Release>
-	<Release maxpower="300" mode="ON" name="E-Bike Ladestation" number="3" prio="4">
+	<Release maxpower="300" mode="AUTO" name="E-Bike Ladestation" number="3" prio="4">
 		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="0" />
 	</Release>
-	<Release maxpower="200" mode="OFF" name="Kuehlschrank" number="4" prio="5">
-		<Switch enable="False" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="24.0" />
+	<Release maxpower="500" mode="AUTO" name="Poolfilter" number="4" prio="5">
+		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="25.0" />
 	</Release>
 	<Release maxpower="100" mode="AUTO" name="Aquarienheizung" number="5" prio="5">
-		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="24.5" />
+		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="26.0" />
 	</Release>
 </Releases>

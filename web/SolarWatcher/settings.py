@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'moskitoii',
     '217.240.128.220',
-    'gutpelet.home.kg'
+    'fgutpelet.de'
 ]
 
 
