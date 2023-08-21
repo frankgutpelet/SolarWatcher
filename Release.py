@@ -45,6 +45,7 @@ class Release:
 
 		while True:
 			self.frontendif.updateTemp(Temperature.Temperature.getOutdoorTemp())
+			self.logger.Debug("Handle Switches")	
 			for sw in self.switches:
 				sw.CheckTime()
 				if "ON" == sw.mode:
@@ -66,21 +67,12 @@ class Release:
 				else:
 					self.Switch(sw, False)
 
-				#if sw.tempMin >= Temperature.Temperature.getOutdoorTemp():	#Frostschutz
-				#	self.Switch(sw, True)
-				#	sw.tempProtection = True
-				#	self.logger.Debug("protect " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
-				#elif sw.tempProtection and (sw.tempMin < (Temperature.Temperature.getOutdoorTemp() + 0.2)):
-				#	self.Switch(sw, False)
-				#	sw.tempProtection = False
-				#	self.logger.Debug("switch off protection for  " + sw.name + " for low temperature (" + str(Temperature.Temperature.getOutdoorTemp()) + "°C)")
-
+			self.logger.Debug("Handle Release")	
 			self.HandleRelease()
 			if self.configTimestamp != os.path.getmtime(self.configfile):
 				self.configTimestamp = os.path.getmtime(self.configfile)
 				self.parseConfig()
-			self.watchdog.trigger(self.wdIndex)
-
+			time.sleep(5)
 
 	def Ontime(self, sw):
 		minutes = datetime.now().hour * 60 + datetime.now().minute

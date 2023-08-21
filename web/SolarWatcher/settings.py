@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Monitor',
     'Settings',
-    'Battery'
+    'Temperatures'
 ]
 
 MIDDLEWARE = [

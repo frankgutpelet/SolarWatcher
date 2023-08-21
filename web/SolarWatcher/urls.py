@@ -20,5 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('Monitor/', include('Monitor.urls')),
     path('Settings/', include('Settings.urls')),
-    path('Battery/', include('Battery.urls'))
+    path('Temperatures/', include('Temperatures.urls'))
 ]

@@ -32,6 +32,7 @@ class SupplyStatus:
 
 	def __ReadThread(self):
 		self.logger.Debug("start SupplyStatus Thread")
+		debounceCnt = 0
 		while True:
 			self.watchdog.trigger(self.wdIndex)
 			try:
@@ -42,9 +43,12 @@ class SupplyStatus:
 						continue
 					#self.logger.Debug("Wait for falling edge")
 					self.__solarSupply = True
+					debounceCnt = 0
 				else:
 					#no falling edge - indicator does not blink anymore
-					self.__solarSupply = False
+					debounceCnt += 1
+					if 5 == debounceCnt:
+						self.__solarSupply = False
 			except Exception as e:
 				self.logger.Error("SolarSupply: " + str(e))
 				GPIO.setmode(GPIO.BCM)
