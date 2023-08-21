@@ -1,0 +1,10 @@
+{
+  "Studio" : {"id" : "channel0" },
+  "Schlafen" : {"id" :  "channel1"},
+  "Wohnen" : {"id" :  "channel2"},
+  "Aussen" : {"id" :  "channel3"},
+  "Alex" : {"id" :  "channel4"},
+  "Pool" : {"url" :  "http://tempsensor/temp"},
+  "Gefrierschrank" : {"url" : "http://solarfreigabe10/temp"}
+
+}
