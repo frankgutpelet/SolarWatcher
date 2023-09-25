@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Releases>
 	<Logging cvs="True" loglevel="DEBUG" />
-	<Release maxpower="100" mode="AUTO" name="Kuehlschrank" number="1" prio="5">
-		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="26.5" />
+	<Release maxpower="100" mode="OFF" name="Kuehlschrank" number="1" prio="5">
+		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="25.3" />
 	</Release>
 	<Release maxpower="100" mode="OFF" name="Fussbodenheizung Bad" number="2" prio="6">
 		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="26.5" />
@@ -10,16 +10,16 @@
 	<Release maxpower="100" mode="AUTO" name="E-Bike Ladestation" number="3" prio="4">
 		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="0" />
 	</Release>
-	<Release maxpower="100" mode="AUTO" name="Pool" number="4" prio="5">
-		<Switch enable="True" frostschutz="-100" id="0" off="20:00" on="8:30" supply="solar" voltage="26.0" />
+	<Release maxpower="500" mode="AUTO" name="Pool" number="4" prio="5">
+		<Switch enable="True" frostschutz="-100" id="0" off="20:00" on="8:30" supply="solar" voltage="25.0" />
 	</Release>
 	<Release maxpower="100" mode="AUTO" name="Aquarienheizung" number="5" prio="5">
-		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="26.3" />
+		<Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="25.5" />
 	</Release>
 	<Release maxpower="100" mode="AUTO" name="Bachlauf" number="6" prio="5">
-		<Switch enable="True" frostschutz="-100" id="0" off="20:00" on="8:00" supply="solar" voltage="26.3" />
+		<Switch enable="True" frostschutz="-100" id="0" off="20:00" on="8:00" supply="solar" voltage="25.3" />
 	</Release>
 	<Release maxpower="100" mode="AUTO" name="Gefrierschrank" number="10" prio="5">
-                <Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="26.5" />
+                <Switch enable="True" frostschutz="-100" id="0" off="0:00" on="0:00" supply="solar" voltage="25.3" />
         </Release>
 </Releases>
