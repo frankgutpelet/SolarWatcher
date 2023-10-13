@@ -27,10 +27,11 @@ SolVoltage = float()
 chargeCur = float()
 mode = int()
 wd = ThreadWatchdog.ThreadWatchdog(logger)
+VictronChannels = ["/dev/ttyUSB0"]
 
 #fuelGauge = FuelGauge.FuelGauge("Battery.xml", logger)
 supply = SupplyStatus.SupplyStatus(logger, wd)
-charger = Victron.Victron(supply, logger, "/dev/ttyUSB0", wd)
+charger = Victron.Victron(supply, logger, VictronChannels, wd)
 Freigabe = Release.Release(charger, logger, "Releases.xml", wd)
 
 #chnge state for the first action

@@ -6,9 +6,16 @@ import os
 import time 
 import FrontendInterface
 import traceback
+import re
 
 class Victron(object):
 	"""this class reads state of the victron energy charger and controls it"""
+	coms : list
+	mode : str
+	batVoltage : int
+	solVoltage : int
+	chargeCur : int
+	errorCnt : int
 
 	class Error:
 		No_error=0
@@ -84,9 +91,17 @@ class Victron(object):
 				return "Unknown state " + str(state)
 
 
-	def __init__(self, solarSupply, logger, comport, watchdog):
+	def __init__(self, solarSupply, logger, comports : list, watchdog):
 		self.logger = logger
-		self.Connect(comport)
+		self.coms = list()
+		self.batVoltage = 0
+		self.solVoltage = 0
+		self.chargeCur = 0
+		self.mode = "unknown"
+		self.errorCnt = 0
+
+		for comport in comports:
+			self.Connect(comport)
 		self.solarSupply = solarSupply
 		self.batVoltage = 0
 		self.pipeLength = 0
@@ -98,71 +113,107 @@ class Victron(object):
 		return 
 
 	def Connect(self, comport):
-		self.com = serial.Serial(comport, 19200)
+		self.coms.append(serial.Serial(comport, 19200))
 
 	def Disconnect(self):
-		if self.com.isOpen():
-			self.com.close()
+		for com in self.coms:
+			if com.isOpen():
+				com.close()
+		self.coms = list()
 
 	def __ReadThread(self):
 		self.logger.Debug("start Victron Thread")
-		batV=0
-		solV=0
-		cur=0
-		mod=0
+		update = False
+
 		while True:
-			try:
-				line = ""
-				self.com.flush()
-				update = False
-				for i in range(1, 20):
+			batV = 0
+			solV = 0
+			cur = 0
+			mod = 0
 
-					line = str(self.com.readline())
-					try:
-						pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
-					except:
-						self.logger.Debug("could not parse: " + line)
-						continue
+			for com in self.coms:
+				values = self.__parseVictron(com)
+				if float(values['batV']) > batV:
+					batV += values['batV']
+				if float(values['batV']) > solV:
+					solV += values['solV']
+				cur += values['cur']
+				mod = values['mod']
 
-					if 2 > len(pair):
-						continue
+			if 0 == mod or 0 == batV:
+				continue
 
-					if ('V' == pair[0]):
-						self.batVoltage = int(pair[1])/1000
-						if (int(batV*10) != int(self.batVoltage*10)):
-							batV = self.batVoltage
-							update = True
-					elif ('VPV' == pair[0]):
-						self.solVoltage = int(pair[1])/1000
-						if (int(solV/5) != int(self.solVoltage/5)):
-							solV = self.solVoltage
-							update = True
-					elif ('I' == pair[0]):
-						self.chargeCur = int(pair[1])/1000
-						if (int(cur) != int(self.chargeCur)):
-							cur = self.chargeCur
-							update = True
-					elif ('CS' == pair[0]):
-						self.mode = int(pair[1])
-						if (mod != self.mode):
-							mod = self.mode
-					elif ('ERR' == pair[0]):
-						self.errorcode = int(pair[1])
-						if(Victron.Error.No_error != self.errorcode):
-							self.logger.Error(Victron.Error.getError(self.errorcode))
+			if 	batV != self.batVoltage or cur != self.chargeCur != cur or mod != self.mode:
+				update = True
 
-				if(self.solarSupply.SolarSupply()):
-					self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Solar")
-				else:
-					self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Netz")
-				self.FrontendIf.sendData()
+			self.errorCnt +=1
+			self.solVoltage = solV
+			self.batVoltage = batV
+			self.chargeCur = cur
+			self.mode = mod
 
-				if update:
-					self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
-				time.sleep(1)
-			except Exception  as e:
-				self.logger.Error("Error in Victron Thread " + str(e) + " in line: " + line + traceback.format_exc())
+			if(self.solarSupply.SolarSupply()):
+				self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Solar")
+			else:
+				self.FrontendIf.updateVictronData(batV, cur, solV, Victron.ChargingState.GetState(mod), "Netz")
+			self.FrontendIf.sendData()
+
+			if update:
+				self.logger.ToCVS(batV, solV, Victron.ChargingState.GetState(mod), cur, self.solarSupply.SolarSupply())
+			time.sleep(2)
+
 
 			self.watchdog.trigger(self.wdIndex)
 
 
+	def __parseVictron(self, com):
+
+		text = ""
+		ret = {'batV' : 0, 'solV' : 0, 'cur' : 0, 'mod' : 'unknown'}
+		com.flush()
+		control = ""
+
+		try:
+
+			for i in range(1, 20):
+
+				line = str(com.readline())
+
+				if 'checksum' in line:
+					break
+				else:
+					text += line
+
+				try:
+					pair = line.split('\\r\\n')[0].split('b\'')[1].split('\\t')
+				except:
+					self.logger.Debug("could not parse: " + line)
+					continue
+
+				if 2 > len(pair):
+					continue
+
+				if ('V' == pair[0]):
+					ret['batV'] =  int(pair[1]) / 1000
+					control += 'VB '
+				elif ('VPV' == pair[0]):
+					ret['solV'] = int(pair[1]) / 1000
+					control += 'VPV '
+				elif ('I' == pair[0]):
+					ret['cur'] = int(pair[1]) / 1000
+					control += 'I '
+				elif ('CS' == pair[0]):
+					ret['mod'] = int(pair[1])
+					control += "CS "
+				elif ('ERR' == pair[0]):
+					self.errorcode = int(pair[1])
+					if (Victron.Error.No_error != self.errorcode):
+						self.logger.Error(Victron.Error.getError(self.errorcode))
+
+				if not ('VB' in control and 'VPV' in control and 'I' in control and 'CS' in control):
+					ret['mod'] = 0
+
+		except Exception  as e:
+			self.logger.Error("Error in Victron Thread " + str(e) + " in line: " + line + traceback.format_exc())
+
+		return ret
